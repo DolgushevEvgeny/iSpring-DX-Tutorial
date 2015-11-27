@@ -282,5 +282,80 @@
             </strong>
         </pre>
 
+
+
+        <h1>Шаг 6. Доработка панели навигации.</h1>
+        <p>
+            Теперь мы можем узнавать, на каком по счету слайде находится наша презентация.
+            Но давайте добавим возможность задавать значение следующего слайда через ввод нового значения.
+            Тогда изменим тег поля в котором отображается счетчик слайдов и добавим обработчик события при изменении значения.
+        </p>
+        <pre>
+            <strong>&lt;input id=&quot;slideIndex&quot; type=&quot;text&quot; size=&quot;3&quot; onchange=&quot;initSlidesControlsEventsHandlers()&quot;&gt;</strong>
+        </pre>
+        <p>
+             В HTML-стилях поменяем его визуализацию
+        </p>
+        <pre>
+            <strong>#slideIndex {
+                font-size: 12pt;
+                font-family: Arial, sans-serif;
+                text-align: center;
+                width: 30px;
+                height: 25px;
+                display: inline-block;
+                border: 0px solid #000;
+                margin-left: 3px;
+            }</strong>
+        </pre>
+        <p>
+            Добавим два новых элемента - текстовые поля, для оторажения разделителя и счетчика общего числа слайдов.
+        </p>
+        <pre>
+            <strong>&lt;span id=&quot;delimiter&quot;&gt;&lt;/span&gt;
+            &lt;span id=&quot;allSlidesCount&quot;&gt;&lt;/span&gt;</strong>
+        </pre>
+        <p>
+            Определим новые переменные, отвечающие за наши новые элементы.
+        </p>
+        <pre>
+            <strong>var slideIndexLabel = document.getElementById(&quot;slideIndex&quot;);
+            var delimiter = document.getElementById(&quot;delimiter&quot;);
+            var allSlidesCount = document.getElementById(&quot;allSlidesCount&quot;);</strong>
+        </pre>
+        <p>
+            Теперь нужно переписать функцию отображения данных о состоянии слайдов.
+        </p>
+        <pre>
+            <strong>function initPlaybackControllerEventsHandlers()
+            {
+                playbackController.slideChangeEvent().addHandler(function(slideIndex)
+                {
+                    slideIndexLabel.value = &quot;&quot; + slideIndex;
+                    delimiter.innerHTML = &quot;/&quot;;
+                    allSlidesCount.innerHTML = &quot;&quot; + (slidesCount - 1);
+                });
+            }</strong>
+        </pre>
+        <p>
+            И наконец добавить функцию, с помощью которой можно вводить новое значение индекса слайда и переходить к нему.
+        </p>
+        <pre>
+            <strong>function initSlidesControlsEventsHandlers()
+            {
+                var currentSlideIndex = playbackController.currentSlideIndex();
+                var newSlideIndex = slideIndexLabel.value;
+                if (newSlideIndex &gt;= 0 &amp;&amp; newSlideIndex &lt;= slidesCount)
+                {
+                    playbackController.gotoSlide(newSlideIndex);
+                }
+                else
+                {
+                    slideIndexLabel.value = currentSlideIndex;
+                }
+            }</strong>
+        </pre>
+
+
     </body>
 </html>
