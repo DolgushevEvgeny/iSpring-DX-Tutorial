@@ -6,30 +6,92 @@
         <title>Your web page title</title>
         <style>
             #presentation {
-                float: left;
                 width: 864px;
                 height: 540px;
                 border: 1px solid #000;
-                }
+            }
 
-            #playerState{
+            .buttons {
+                margin-left: 5px;
+            }
+
+            #prev {
                 float: left;
-                font: 18px 'Arial', sans-serif;
-                margin-left: 50px;
-                }
+                width: 80px;
+                height: 35px;
+            }
+
+            #next {
+                width: 80px;
+                height: 35px;
+                clear: both;
+            }
+
+            #slideIndex {
+                font-size: 12pt;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            #temp {
+                border: 1px solid #000;
+                border-radius: 5px;
+                float: left;
+                width: 100px;
+                height: 35px;
+                margin: 0 10px;
+            }
         </style>
     </head>
     <body>
         <iframe id="presentation" src="presentation/index.html"></iframe>
-        <p id="playerState">Presentation is not running</p>
+        <div class="buttons">
+            <button id="prev">Prev</button>
+            <div id="temp">
+                <p id="slideIndex"></p>
+            </div>
+            <button id="next">Next</button>
+        </div>
 
         <script>
-            var playerState = document.getElementById("playerState");
+            var prevBtn = document.getElementById("prev");
+            var nextBtn = document.getElementById("next");
+            var slideIndexLabel = document.getElementById("slideIndex");
             var ispringPresentationConnector = {};
+            var playbackController = undefined;
+
+            var presentation = undefined;
+            var slidesCount;
 
             ispringPresentationConnector.register = function(player)
             {
-                playerState.innerHTML = "Presentation is running";
+                var presentation = player.presentation();
+                slidesCount = presentation.slides().count();
+
+                playbackController = player.view().playbackController();
+                initButtonsEventsHandlers();
+                initPlaybackControllerEventsHandlers();
+            }
+
+            function initButtonsEventsHandlers()
+            {
+                prevBtn.onclick = function()
+                {
+                    playbackController.gotoPreviousSlide();
+                };
+
+                nextBtn.onclick = function()
+                {
+                    playbackController.gotoNextSlide();
+                };
+            }
+
+            function initPlaybackControllerEventsHandlers()
+            {
+                playbackController.slideChangeEvent().addHandler(function(slideIndex)
+                {
+                    slideIndexLabel.innerHTML = "" + (slideIndex) + "/" + (slidesCount - 1);
+                });
             }
         </script>
     </body>

@@ -125,5 +125,162 @@
 
 
 
+        <h1>Шаг 5. Создание панели навигации</h1>
+        <p>
+            Теперь мы уже знаем что при загрузке страницы, презентация начинает проигрываться автоматически.
+            Значит элемент "текстовое поле" нам больше не нужен и его можно убрать, а также можно убрать его из HTML-стилей.
+            И код будет выглядеть так:
+        </p>
+        <pre>
+            &lt;!DOCTYPE html&gt;
+                &lt;html&gt;
+                    &lt;head&gt;
+                        &lt;meta charset=&quot;utf-8&quot;&gt;
+                        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,maximum-scale=1&quot;/&gt;
+                        &lt;title&gt;Your web page title&lt;/title&gt;
+                        &lt;style&gt;
+                            #presentation {
+                                float: left;
+                                width: 864px;
+                                height: 540px;
+                                border: 1px solid #000;
+                                }
+                        &lt;/style&gt;
+                    &lt;/head&gt;
+                    &lt;body&gt;
+                        &lt;iframe id=&quot;presentation&quot; src=&quot;presentation/index.html&quot;&gt;&lt;/iframe&gt;
+
+                        &lt;script&gt;
+                            var ispringPresentationConnector = {};
+
+                            ispringPresentationConnector.register = function(player)
+                            {
+
+                            }
+                        &lt;/script&gt;
+                    &lt;/body&gt;
+                &lt;/html&gt;
+        </pre>
+        <p>
+            Добавляем новые элементы - кнопки, с помощью которых будем перелистывать слайды.
+            В HTML-стилях задаем визуализацию и расположение кнопок на странице.
+        </p>
+        <pre>
+            &lt;!DOCTYPE html&gt;
+            &lt;html&gt;
+                &lt;head&gt;
+                    &lt;meta charset=&quot;utf-8&quot;&gt;
+                    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,maximum-scale=1&quot;/&gt;
+                    &lt;title&gt;Your web page title&lt;/title&gt;
+                    &lt;style&gt;
+                        #presentation {
+                            width: 864px;
+                            height: 540px;
+                            border: 1px solid #000;
+                            }
+                        <strong>
+                        #prev {
+                            width: 80px;
+                            height: 35px;
+                        }
+
+                        #next {
+                            width: 80px;
+                            height: 35px;
+                            margin-left: 20px;
+                        }
+                        </strong>
+                    &lt;/style&gt;
+                &lt;/head&gt;
+                &lt;body&gt;
+                    &lt;iframe id=&quot;presentation&quot; src=&quot;presentation/index.html&quot;&gt;&lt;/iframe&gt;
+                    <strong>&lt;button id=&quot;prev&quot;&gt;Prev&lt;/button&gt;
+                    &lt;button id=&quot;next&quot;&gt;Next&lt;/button&gt;
+                    </strong>
+                    &lt;script&gt;
+                        <strong>
+                        var prevBtn = document.getElementById(&quot;prev&quot;);
+                        var nextBtn = document.getElementById(&quot;next&quot;);
+                        </strong>
+                        var ispringPresentationConnector = {};
+
+                        ispringPresentationConnector.register = function(player)
+                        {
+
+                        }
+                    &lt;/script&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+        </pre>
+        <p>
+            Устанавливаем события на кнопки при нажатии. Таким образом, при нажатии на кнопку "Next", презентация будет переходить на слайд вперед,
+            а при нажатии на кнопку "Prev" - на слайд назад.
+        </p>
+        <pre>
+            <strong>
+            function initButtonsEventsHandlers()
+            {
+                prevBtn.onclick = function()
+                {
+                    playbackController.gotoPreviousSlide();
+                };
+
+                nextBtn.onclick = function()
+                {
+                    playbackController.gotoNextSlide();
+                };
+            }
+            </strong>
+        </pre>
+        <p>
+            Добавляем новый элемент - текстовое поле, в которое будут выводиться значения, отражающие индекс текущего слайда и общее количество слайдов.
+            В HTML-стилях задаем шрифт и расположение добвленного текстового поля.
+        </p>
+        <pre>
+            <strong>
+            #slideIndex {
+                font-size: 12pt;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            #temp {
+                border: 1px solid #000;
+                border-radius: 5px;
+                float: left;
+                width: 100px;
+                height: 35px;
+                margin: 0 10px;
+            }</strong>
+        </pre>
+        <p>
+            Все три элемента, в том числе и кнопки, объединяем в один блок, т.к. они представляют собой единую панель управления.
+        </p>
+        <pre>
+            <strong>
+            &lt;div class=&quot;buttons&quot;&gt;
+                &lt;button id=&quot;prev&quot;&gt;Prev&lt;/button&gt;
+                &lt;div id=&quot;temp&quot;&gt;
+                    &lt;p id=&quot;slideIndex&quot;&gt;&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;button id=&quot;next&quot;&gt;Next&lt;/button&gt;
+            &lt;/div&gt;
+            </strong>
+        </pre>
+        <p>
+            Добавляем обработчик событий при изменении слайда презентации на другой.
+        </p>
+        <pre>
+            <strong>
+            function initPlaybackControllerEventsHandlers()
+            {
+                playbackController.slideChangeEvent().addHandler(function(slideIndex)
+                {
+                    slideIndexLabel.innerHTML = &quot;&quot; + (slideIndex) + &quot;/&quot; + (slidesCount - 1);
+                });
+            }
+            </strong>
+        </pre>
+
     </body>
 </html>
