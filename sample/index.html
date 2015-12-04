@@ -12,80 +12,77 @@
             }
 
             .navigation {
-                margin-left: 5px;
-            }
-
-            #prev {
-                float: left;
-                width: 80px;
-                height: 35px;
-            }
-
-            #next {
-                width: 80px;
-                height: 35px;
                 clear: both;
             }
 
-            #slideIndex {
-                font-size: 12pt;
-                font-family: Arial, sans-serif;
-                text-align: center;
-                width: 30px;
-                height: 25px;
-                display: inline-block;
-                border: 0px solid #000;
-                margin-left: 3px;
+            #prev, #next, #play_pause {
+                float: left;
+                width: 80px;
+                height: 35px;
             }
 
-            #delimeter {
+            #cur-slide {
+                font-family: Arial, sans-serif;
+                text-align: left;
+                border: none;
                 width: 20px;
             }
 
-            #allSlidesCount {
-                width: 40px;
+            #slide-counter{
+                float:left;
+                font-size: 12pt;
+                font-family: Arial, sans-serif;
+                padding-top: 10px;
+                text-align: center;
+                width: 80px;
+                height: 22px;
+                display: inline-block;
+                border: 1px solid #000;
+            }
+            #count{
+                font-size: 10pt;
             }
 
-            #temp {
-                border: 1px solid #000;
-                border-radius: 5px;
-                float: left;
-                width: 100px;
-                height: 35px;
-                margin: 0 10px;
-            }
         </style>
     </head>
     <body>
         <iframe id="presentation" src="presentation/index.html"></iframe>
         <div class="navigation">
             <button id="prev">Prev</button>
-            <div id="temp">
-                <input id="slideIndex" type="text" size="3" onchange="initSlidesControlsEventsHandlers()">
+            <div id="slide-counter">
+                <input id="cur-slide" type="text" size="3" onchange="initSlidesControlsEventsHandlers()">
                 <span id="delimiter"></span>
-                <span id="allSlidesCount"></span>
+                <span id="count"></span>
             </div>
             <button id="next">Next</button>
+            <button id="play_pause">Pause</button>
         </div>
+
 
         <script>
             var prevBtn = document.getElementById("prev");
             var nextBtn = document.getElementById("next");
-            var slideIndexLabel = document.getElementById("slideIndex");
+            var slideIndexLabel = document.getElementById("cur-slide");
             var delimiter = document.getElementById("delimiter");
-            var allSlidesCount = document.getElementById("allSlidesCount");
+            var allSlidesCount = document.getElementById("count");
             var ispringPresentationConnector = {};
             var playbackController = undefined;
 
             var presentation = undefined;
             var slidesCount;
 
+            var PLAY = "Play";
+            var PAUSE = "Pause";
+            var playPauseBtn = document.getElementById("play_pause");
+            var isPlayedPresentation;
+
             ispringPresentationConnector.register = function(player)
             {
                 presentation = player.presentation();
                 slidesCount = presentation.slides().count();
-
                 playbackController = player.view().playbackController();
+
+                changePlayPauseBtnState(presentation.settings().playback().autoStart());
                 initButtonsEventsHandlers();
                 initPlaybackControllerEventsHandlers();
             }
@@ -95,11 +92,28 @@
                 prevBtn.onclick = function()
                 {
                     playbackController.gotoPreviousSlide();
+                    changePlayPauseBtnState(true);
+                };
+
+                playPauseBtn.onclick = function()
+                {
+                    if (isPlayedPresentation)
+                    {
+                        playPauseBtn.innerHTML = PLAY;
+                        playbackController.pause();
+                    }
+                    else
+                    {
+                        playPauseBtn.innerHTML = PAUSE;
+                        playbackController.play();
+                    }
+                    isPlayedPresentation = !isPlayedPresentation;
                 };
 
                 nextBtn.onclick = function()
                 {
                     playbackController.gotoNextSlide();
+                    changePlayPauseBtnState(true);
                 };
             }
 
@@ -125,6 +139,16 @@
                 {
                     slideIndexLabel.value = currentSlideIndex;
                 }
+            }
+
+            function changePlayPauseBtnState(isPlayed)
+            {
+                if (isPlayedPresentation == isPlayed)
+                {
+                    return;
+                }
+                isPlayedPresentation = isPlayed;
+                playPauseBtn.innerHTML = (isPlayedPresentation) ? PAUSE : PLAY;
             }
 
         </script>
