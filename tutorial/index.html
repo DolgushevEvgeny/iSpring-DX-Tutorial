@@ -4,6 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
         <title>Руководство пользователя</title>
+        <style>
+            pre strong {
+                background: #BBFFCC;
+            }
+      </style>
     </head>
 
     <body>
@@ -179,15 +184,10 @@
                             border: 1px solid #000;
                             }
                         <strong>
-                        #prev {
+                        #prev, #next {
+                            float: left;
                             width: 80px;
                             height: 35px;
-                        }
-
-                        #next {
-                            width: 80px;
-                            height: 35px;
-                            margin-left: 20px;
                         }
                         </strong>
                     &lt;/style&gt;
@@ -238,19 +238,16 @@
         </p>
         <pre>
             <strong>
-            #slideIndex {
+            #slide-counter{
+                float:left;
                 font-size: 12pt;
                 font-family: Arial, sans-serif;
+                padding-top: 10px;
                 text-align: center;
-            }
-
-            #temp {
+                width: 80px;
+                height: 22px;
+                display: inline-block;
                 border: 1px solid #000;
-                border-radius: 5px;
-                float: left;
-                width: 100px;
-                height: 35px;
-                margin: 0 10px;
             }</strong>
         </pre>
         <p>
@@ -260,8 +257,8 @@
             <strong>
             &lt;div class=&quot;buttons&quot;&gt;
                 &lt;button id=&quot;prev&quot;&gt;Prev&lt;/button&gt;
-                &lt;div id=&quot;temp&quot;&gt;
-                    &lt;p id=&quot;slideIndex&quot;&gt;&lt;/p&gt;
+                &lt;div id=&quot;slide-counterde&quot;&gt;
+                    &lt;p id=&quot;cur-slide&quot;&gt;&lt;/p&gt;
                 &lt;/div&gt;
                 &lt;button id=&quot;next&quot;&gt;Next&lt;/button&gt;
             &lt;/div&gt;
@@ -297,15 +294,11 @@
              В HTML-стилях поменяем его визуализацию
         </p>
         <pre>
-            <strong>#slideIndex {
-                font-size: 12pt;
-                font-family: Arial, sans-serif;
-                text-align: center;
-                width: 30px;
-                height: 25px;
-                display: inline-block;
-                border: 0px solid #000;
-                margin-left: 3px;
+            <strong>
+            #cur-slide {
+                text-align: left;
+                border: none;
+                width: 20px;
             }</strong>
         </pre>
         <p>
@@ -313,7 +306,7 @@
         </p>
         <pre>
             <strong>&lt;span id=&quot;delimiter&quot;&gt;&lt;/span&gt;
-            &lt;span id=&quot;allSlidesCount&quot;&gt;&lt;/span&gt;</strong>
+            &lt;span id=&quot;count&quot;&gt;&lt;/span&gt;</strong>
         </pre>
         <p>
             Определим новые переменные, отвечающие за наши новые элементы.
@@ -356,6 +349,107 @@
             }</strong>
         </pre>
 
+
+
+        <h1>Шаг 7. Добавление кнопки "Play/Pause".</h1>
+        <p>
+            Добавляем новый элемент, кнопку.
+        </p>
+        <pre>
+          &lt;div class=&quot;navigation&quot;&gt;
+          &lt;button id=&quot;prev&quot;&gt;Prev&lt;/button&gt;
+          &lt;div id=&quot;slide-counter&quot;&gt;
+              &lt;input id=&quot;cur-slide&quot; type=&quot;text&quot; size=&quot;3&quot; onchange=&quot;initSlidesControlsEventsHandlers()&quot;&gt;
+              &lt;span id=&quot;delimiter&quot;&gt;&lt;/span&gt;
+              &lt;span id=&quot;count&quot;&gt;&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;button id=&quot;next&quot;&gt;Next&lt;/button&gt;
+          <strong>&lt;button id=&quot;play_pause&quot;&gt;Pause&lt;/button&gt;</strong>
+      &lt;/div&gt;
+        </pre>
+        <p>
+             В HTML-стилях изменим его визуализацию
+        </p>
+        <pre>
+              #prev, #next,<strong> #play_pause</strong> {
+                  float: left;
+                  width: 80px;
+                  height: 35px;
+              }
+        </pre>
+        <p>
+            Добавим новые переменные.
+        </p>
+        <pre>
+            <strong>var PLAY = &quot;Play&quot;;
+            var PAUSE = &quot;Pause&quot;;
+            var playPauseBtn = document.getElementById(&quot;play_pause&quot;);
+            var isPlayedPresentation;</strong>
+        </pre>
+        <p>
+            Добавим функцию изменения состояния добавленной кнопки.
+        </p>
+        <pre>
+            <strong>function changePlayPauseBtnState(isPlayed)
+            {
+                if (isPlayedPresentation == isPlayed)
+                {
+                    return;
+                }
+                isPlayedPresentation = isPlayed;
+                playPauseBtn.innerHTML = (isPlayedPresentation) ? PAUSE : PLAY;
+            }</strong>
+        </pre>
+        <p>
+            Изменим функцию инициализации событий кнопок так, чтобы презентация
+            ставилась на паузу или начинала проигрываться при нажатии на новую кнопку.
+        </p>
+        <pre>
+          function initButtonsEventsHandlers()
+          {
+              prevBtn.onclick = function()
+              {
+                  playbackController.gotoPreviousSlide();
+                  <strong>changePlayPauseBtnState(true);</strong>
+              };
+
+              <strong>playPauseBtn.onclick = function()
+              {
+                  if (isPlayedPresentation)
+                  {
+                      playPauseBtn.innerHTML = PLAY;
+                      playbackController.pause();
+                  }
+                  else
+                  {
+                      playPauseBtn.innerHTML = PAUSE;
+                      playbackController.play();
+                  }
+                  isPlayedPresentation = !isPlayedPresentation;
+              };</strong>
+
+              nextBtn.onclick = function()
+              {
+                  playbackController.gotoNextSlide();
+                  <strong>changePlayPauseBtnState(true);</strong>
+              };
+          }
+        </pre>
+        <p>
+            Добавим вызов функции изменения состояния кнопки в функцию подключения к презентации.
+        </p>
+        <pre>
+          ispringPresentationConnector.register = function(player)
+              {
+                  presentation = player.presentation();
+                  slidesCount = presentation.slides().count();
+                  playbackController = player.view().playbackController();
+
+                  <strong>changePlayPauseBtnState(presentation.settings().playback().autoStart());</strong>
+                  initButtonsEventsHandlers();
+                  initPlaybackControllerEventsHandlers();
+              }
+        </pre>
 
     </body>
 </html>
