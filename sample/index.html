@@ -6,9 +6,10 @@
         <title>Your web page title</title>
         <style>
             #presentation {
+                float: left;
                 width: 864px;
                 height: 540px;
-                border: 1px solid #000;
+                border: 1px solid #000000;
             }
 
             .navigation {
@@ -29,7 +30,7 @@
             }
 
             #slide-counter{
-                float:left;
+                float: left;
                 font-size: 12pt;
                 font-family: Arial, sans-serif;
                 padding-top: 10px;
@@ -43,21 +44,36 @@
                 font-size: 10pt;
             }
 
+            .slidesNavigation{
+                margin-top: -542px;
+                margin-right: 250px;
+                float: right;
+                width: 200px;
+                height: 540px;
+                border: 1px solid #000;
+                clear: both;
+            }
+
         </style>
     </head>
     <body>
         <iframe id="presentation" src="presentation/index.html"></iframe>
-        <div class="navigation">
-            <button id="prev">Prev</button>
-            <div id="slide-counter">
-                <input id="cur-slide" type="text" size="3" onchange="initSlidesControlsEventsHandlers()">
-                <span id="delimiter"></span>
-                <span id="count"></span>
+        <div>
+            <div class="navigation">
+                <div class="slidesNavigation">
+                    <canvas id="canvas" width="200" height="150"></canvas>
+                    <span id="slide"></span>
+                </div>
+                <button id="prev">Prev</button>
+                <div id="slide-counter">
+                    <input id="cur-slide" type="text" size="3" onchange="initSlidesControlsEventsHandlers()">
+                    <span id="delimiter"></span>
+                    <span id="count"></span>
+                </div>
+                <button id="next">Next</button>
+                <button id="play_pause">Pause</button>
             </div>
-            <button id="next">Next</button>
-            <button id="play_pause">Pause</button>
         </div>
-
 
         <script>
             var prevBtn = document.getElementById("prev");
@@ -65,11 +81,15 @@
             var slideIndexLabel = document.getElementById("cur-slide");
             var delimiter = document.getElementById("delimiter");
             var allSlidesCount = document.getElementById("count");
+            var slidesBlock = document.getElementsByClassName("lidesNavigation");
+            var slide = document.getElementById("slide");
+            var cvs = document.getElementById("canvas");
+            var context = cvs.getContext("2d");
             var ispringPresentationConnector = {};
             var playbackController = undefined;
-
             var presentation = undefined;
             var slidesCount;
+            var slides = undefined;
 
             var PLAY = "Play";
             var PAUSE = "Pause";
@@ -79,6 +99,8 @@
             ispringPresentationConnector.register = function(player)
             {
                 presentation = player.presentation();
+                slides = presentation.slides();
+
                 slidesCount = presentation.slides().count();
                 playbackController = player.view().playbackController();
 
