@@ -9,117 +9,133 @@
                 float: left;
                 width: 864px;
                 height: 540px;
-                border: 1px solid #000000;
+                border: 1px solid #000;
             }
 
-            .navigation {
-                clear: both;
+            *{
+              font: 12pt Arial, sans-serif;
             }
 
-            #prev, #next, #play_pause {
+            .clear
+            {
+              clear: both;
+            }
+
+            #button-prev, #button-next, #play-pause {
                 float: left;
+                display: inline-block;
                 width: 80px;
                 height: 35px;
             }
 
-            #cur-slide {
-                font-family: Arial, sans-serif;
-                text-align: left;
-                border: none;
-                width: 20px;
-            }
-
             #slide-counter{
                 float: left;
-                font-size: 12pt;
-                font-family: Arial, sans-serif;
-                padding-top: 10px;
                 text-align: center;
-                width: 80px;
-                height: 22px;
-                display: inline-block;
+                min-width: 80px;
                 border: 1px solid #000;
-            }
-            #count{
-                font-size: 10pt;
+                vertical-align: bottom;
+                display: inline-block;
             }
 
-            .slidesNavigation{
-                margin-top: -542px;
-                margin-right: 250px;
-                float: right;
-                width: 200px;
-                height: 540px;
-                border: 1px solid #000;
-                clear: both;
+            #cur-slide {
+                border: none;
+                width: 20px;
+                height: 31px;
+            }
+
+            #outline{
+                overflow-y: auto;
+                padding: 10px 5px 10px 0px;
+                height: 522px;
+                float: left;
+                background-color: #E0E0E0;
+            }
+
+            #outline li:hover{
+                padding: 5px 0;
+                background-color: #D0D0D0;
             }
 
         </style>
     </head>
     <body>
-        <iframe id="presentation" src="presentation/index.html"></iframe>
         <div>
-            <div class="navigation">
-                <div class="slidesNavigation">
-                    <canvas id="canvas" width="200" height="150"></canvas>
-                    <span id="slide"></span>
-                </div>
-                <button id="prev">Prev</button>
-                <div id="slide-counter">
-                    <input id="cur-slide" type="text" size="3" onchange="initSlidesControlsEventsHandlers()">
-                    <span id="delimiter"></span>
-                    <span id="count"></span>
-                </div>
-                <button id="next">Next</button>
-                <button id="play_pause">Pause</button>
-            </div>
+            <iframe id="presentation" src="presentation/index.html"></iframe>
+            <div id="outline"> </div>
         </div>
-
+        <div class="clear"> </div>
+        <div>
+            <button id="button-prev">Prev</button>
+            <div id="slide-counter">
+                <input id="cur-slide" type="text" size="3">
+                <span id="delimiter">/</span>
+                <span id="count"></span>
+            </div>
+            <button id="button-next">Next</button>
+            <button id="play-pause">Pause</button>
+        </div>
+        <div class="clear"> </div>
+        <div id="logger"> </div>
         <script>
-            var prevBtn = document.getElementById("prev");
-            var nextBtn = document.getElementById("next");
+            var PLAY = "Play";
+            var PAUSE = "Pause";
+
+            var prevBtn = document.getElementById("button-prev");
+            var nextBtn = document.getElementById("button-next");
             var slideIndexLabel = document.getElementById("cur-slide");
-            var delimiter = document.getElementById("delimiter");
             var allSlidesCount = document.getElementById("count");
-            var slidesBlock = document.getElementsByClassName("lidesNavigation");
-            var slide = document.getElementById("slide");
-            var cvs = document.getElementById("canvas");
-            var context = cvs.getContext("2d");
+            var playPauseBtn = document.getElementById("play-pause");
+            var logger = document.getElementById("logger");
+
             var ispringPresentationConnector = {};
             var playbackController = undefined;
             var presentation = undefined;
             var slidesCount;
-            var slides = undefined;
-
-            var PLAY = "Play";
-            var PAUSE = "Pause";
-            var playPauseBtn = document.getElementById("play_pause");
-            var isPlayedPresentation;
+            var doesPlayPresentation = false;
+            var slideBarItems = [];
+            var selectedSlideNumber = 0;
 
             ispringPresentationConnector.register = function(player)
             {
                 presentation = player.presentation();
-                slides = presentation.slides();
-
                 slidesCount = presentation.slides().count();
                 playbackController = player.view().playbackController();
 
+                initButtonsEventHandlers();
+                initPlaybackControllerEventHandlers();
                 changePlayPauseBtnState(presentation.settings().playback().autoStart());
-                initButtonsEventsHandlers();
-                initPlaybackControllerEventsHandlers();
-            }
+                createSlideBar();
+            };
 
-            function initButtonsEventsHandlers()
+            function initButtonsEventHandlers()
             {
                 prevBtn.onclick = function()
                 {
                     playbackController.gotoPreviousSlide();
-                    changePlayPauseBtnState(true);
+                };
+
+                nextBtn.onclick = function()
+                {
+                    playbackController.gotoNextSlide();
+                };
+
+                slideIndexLabel.onchange = function()
+                {
+                    var currentSlideIndex = playbackController.currentSlideIndex();
+                    var newSlideNo = slideIndexLabel.value;
+                    if (newSlideNo > 0 && newSlideNo < slidesCount)
+                    {
+                        playbackController.gotoSlide(newSlideNo);
+                    }
+                    else
+                    {
+                        slideIndexLabel.value = currentSlideIndex;
+                    }
                 };
 
                 playPauseBtn.onclick = function()
                 {
-                    if (isPlayedPresentation)
+                    if (doesPlayPresentation)
                     {
                         playPauseBtn.innerHTML = PLAY;
                         playbackController.pause();
@@ -129,50 +145,68 @@
                         playPauseBtn.innerHTML = PAUSE;
                         playbackController.play();
                     }
-                    isPlayedPresentation = !isPlayedPresentation;
-                };
-
-                nextBtn.onclick = function()
-                {
-                    playbackController.gotoNextSlide();
-                    changePlayPauseBtnState(true);
+                    doesPlayPresentation = !doesPlayPresentation;
                 };
             }
 
-            function initPlaybackControllerEventsHandlers()
+            function initPlaybackControllerEventHandlers()
             {
                 playbackController.slideChangeEvent().addHandler(function(slideIndex)
                 {
-                    slideIndexLabel.value = "" + slideIndex;
-                    delimiter.innerHTML = "/";
-                    allSlidesCount.innerHTML = "" + (slidesCount - 1);
+                    slideIndexLabel.value = slideIndex.toString();
+                    allSlidesCount.innerHTML = (slidesCount - 1).toString();
+                    logEnterSlide(slideIndex);
                 });
-            }
 
-            function initSlidesControlsEventsHandlers()
-            {
-                var currentSlideIndex = playbackController.currentSlideIndex();
-                var newSlideIndex = slideIndexLabel.value;
-                if (newSlideIndex >= 0 && newSlideIndex <= slidesCount)
+                playbackController.stepChangeEvent().addHandler(function()
                 {
-                    playbackController.gotoSlide(newSlideIndex);
-                }
-                else
-                {
-                    slideIndexLabel.value = currentSlideIndex;
-                }
+                    changePlayPauseBtnState(true);
+                });
             }
 
             function changePlayPauseBtnState(isPlayed)
             {
-                if (isPlayedPresentation == isPlayed)
+                if (doesPlayPresentation == isPlayed)
                 {
                     return;
                 }
-                isPlayedPresentation = isPlayed;
-                playPauseBtn.innerHTML = (isPlayedPresentation) ? PAUSE : PLAY;
+                doesPlayPresentation = isPlayed;
+                playPauseBtn.innerHTML = (doesPlayPresentation) ? PAUSE : PLAY;
             }
 
+            function createSlideBar()
+            {
+                var slideBar = document.getElementById('outline');
+                var slideList = document.createElement('ol');
+                slideBar.appendChild(slideList);
+                for (var i = 1; i < slidesCount; ++i)
+                {
+                    createSlideBarItem(i, slideList);
+                }
+            }
+
+            function createSlideBarItem(slideNumber, slideList)
+            {
+                var item = document.createElement('li');
+                var title = presentation.slides().getSlide(slideNumber).title();
+                item.innerHTML = title != "" ? title : "--no title--";
+                slideList.appendChild(item);
+                item.onclick = function()
+                {
+                    playbackController.gotoSlide(slideNumber);
+                };
+                slideBarItems.push(item);
+            }
+
+            function logEnterSlide(slideNo)
+            {
+                var date = new Date();
+                var slideTitle = presentation.slides().getSlide(slideNo).title();
+                slideTitle = slideTitle == "" ? "--no title--" : slideTitle;
+                var msg = '<br>'+ date.getHours().toString() + ':'+ date.getMinutes().toString() + ':' +
+                date.getSeconds().toString() +' slide ' + slideNo.toString() + ' "' + slideTitle + '"';
+                logger.innerHTML += msg;
+            }
         </script>
     </body>
 </html>
